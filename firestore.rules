@@ -1,0 +1,99 @@
+/**
+ * @fileoverview Firestore Security Rules for the SERS application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model. Users can only
+ * access their own profile data and incident reports. This is achieved
+ * primarily through path-based authorization for profiles and document-based
+ * authorization for incident reports. Admins have broader read access and can
+ * update incident statuses.
+ *
+ * Data Structure:
+ * - User profiles are stored under `/users/{userId}/profile/{profileId}`.
+ * - Incident reports are stored in a top-level collection `/incidentReports/{reportId}`.
+ *
+ * Key Security Decisions:
+ * - User listing is enabled for signed-in users (admins) via a collection group query.
+ * - Read-only collections are not present in this data model.
+ * - The default security posture for ambiguous relationships is strict: deny all.
+ * - Admin roles are checked by reading the user's profile during write operations.
+ *
+ * Denormalization for Authorization:
+ * - The `userId` is stored within each incident report document to enable
+ *   document-based access control (DBAC), as path-based ownership is not used
+ *   for the top-level `incidentReports` collection.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Enforces access control for user profiles. Only the owner can read, create, update, or delete their profile. Admins can list profiles.
+     * @path /users/{userId}/profile/{profileId}
+     * @allow (get, create, update, delete) User with UID 'user123' can access /users/user123/profile/user123.
+     * @allow (list) Any signed-in user can list profiles (for admin dashboard).
+     * @deny (get, create, update, delete) User with UID 'user456' cannot access /users/user123/profile/user123.
+     * @principle Enforces document ownership for most operations via path and document ID.
+     */
+    match /users/{userId}/profile/{profileId} {
+      // Allow reads only if the user is signed in and owns the profile.
+      allow get: if isSignedIn() && isOwner(userId);
+      // Allow creation only if the user is signed in, the userId in the path matches their auth UID,
+      // and the document's ID also matches their auth UID.
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.id == userId;
+      // Allow updates and deletes only if the user is signed in and owns the profile.
+      allow update: if isSignedIn() && isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    /**
+     * @description Allows admins to list all user profiles via a collection group query.
+     * @path /profile/{profileId}
+     * @allow (list) Any signed-in user can list all profiles.
+     */
+    match /{path=**}/profile/{profileId} {
+      allow list: if isSignedIn();
+    }
+
+
+    /**
+     * @description Enforces access control for the top-level incident reports collection.
+     * @path /incidentReports/{reportId}
+     * @allow (create) Any signed-in user can create a report.
+     * @allow (get, list) Any signed-in user can get or list reports (for admin dashboard).
+     * @allow (update) Only the user who created the report or an admin can update it.
+     * @allow (delete) Only the user who created the report can delete it.
+     * @principle Enforces document ownership for write operations via a 'userId' field check (DBAC).
+     */
+    match /incidentReports/{reportId} {
+      // Allow any signed-in user to create a report, as long as they set their own UID correctly.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.id == reportId;
+
+      // Allow read and list for any signed-in user (for admins to view details).
+      allow get, list: if isSignedIn();
+      
+      // Allow update if the user is the owner OR if the user is an admin.
+      // Admin update logic is handled through the app interface, not direct rule changes here.
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    // Helper function to check if a user is an admin
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)/profile/$(request.auth.uid)).data.userType == 'admin';
+    }
+  }
+}

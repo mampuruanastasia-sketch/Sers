@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "login-hero",
+      "description": "University campus with students walking",
+      "imageUrl": "https://images.unsplash.com/photo-1576495199011-eb94736d05d6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwY2FtcHVzfGVufDB8fHx8MTc2MzAxMTYxNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "university campus"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 33 75% 94%;
+    --foreground: 213 78% 20%;
+    --card: 33 75% 98%;
+    --card-foreground: 213 78% 20%;
+    --popover: 33 75% 98%;
+    --popover-foreground: 213 78% 20%;
+    --primary: 8 84% 57%;
+    --primary-foreground: 33 93% 94%;
+    --secondary: 40 99% 85%;
+    --secondary-foreground: 213 78% 20%;
+    --muted: 40 99% 85%;
+    --muted-foreground: 213 78% 40%;
+    --accent: 40 99% 55%;
+    --accent-foreground: 213 78% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 33 93% 94%;
+    --border: 40 99% 80%;
+    --input: 40 99% 80%;
+    --ring: 8 84% 57%;
+    --radius: 0.5rem;
+    --sidebar-background: 33 75% 98%;
+    --sidebar-foreground: 213 78% 20%;
+    --sidebar-primary: 8 84% 57%;
+    --sidebar-primary-foreground: 33 93% 94%;
+    --sidebar-accent: 33 75% 88%;
+    --sidebar-accent-foreground: 213 78% 20%;
+    --sidebar-border: 33 75% 80%;
+    --sidebar-ring: 8 84% 57%;
+  }
+
+  .dark {
+    --background: 213 78% 20%;
+    --foreground: 33 75% 94%;
+    --card: 213 78% 22%;
+    --card-foreground: 33 75% 94%;
+    --popover: 213 78% 22%;
+    --popover-foreground: 33 75% 94%;
+    --primary: 8 84% 57%;
+    --primary-foreground: 33 93% 94%;
+    --secondary: 40 99% 55%;
+    --secondary-foreground: 213 78% 10%;
+    --muted: 213 78% 25%;
+    --muted-foreground: 213 30% 65%;
+    --accent: 40 99% 55%;
+    --accent-foreground: 213 78% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 33 93% 94%;
+    --border: 213 78% 25%;
+    --input: 213 78% 25%;
+    --ring: 40 99% 55%;
+    --sidebar-background: 213 78% 20%;
+    --sidebar-foreground: 33 75% 94%;
+    --sidebar-primary: 8 84% 57%;
+    --sidebar-primary-foreground: 33 93% 94%;
+    --sidebar-accent: 213 78% 25%;
+    --sidebar-accent-foreground: 33 75% 94%;
+    --sidebar-border: 213 78% 25%;
+    --sidebar-ring: 40 99% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
